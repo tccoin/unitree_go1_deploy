@@ -6,7 +6,6 @@ import numpy as np
 import torch
 
 from go1_gym_deploy.utils.logger import MultiLogger
-import matplotlib.pyplot as plt
 
 
 class DeploymentRunner:

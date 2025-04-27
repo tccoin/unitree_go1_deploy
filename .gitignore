@@ -55,6 +55,7 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+*.whl
 
 # VS Code
 .vscode
