@@ -63,11 +63,15 @@ pip install torch-1.13.0a0+d0d6b1f2.nv22.10-cp38-cp38-linux_aarch64.whl
 
 Install the environment
 ```bash
-# create environment and activate
-conda create -n go1_deploy python=3.8
-conda activate go1_deploy
-
 # install
 cd go1_deploy
 pip install -e .
+```
+---
+
+## Run Policy
+```bash
+conda activate go1_deploy
+cd go1_deploy/go1_gym_deploy/scripts/
+python deploy.py 
 ```
