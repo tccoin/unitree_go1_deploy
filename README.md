@@ -70,8 +70,16 @@ pip install -e .
 ---
 
 ## Run Policy
+- `Ping 192.168.123.15` to validate connection
+- Press `L2 + A`, make robot get down
+- Press `L2 + B`, enter damping mode
 ```bash
+# Start communication with Go1
+cd unitree_legged_sdk/build
+./lcm_position
+# Open a new terminal, launch policy
 conda activate go1_deploy
 cd go1_deploy/go1_gym_deploy/scripts/
-python deploy.py 
+# deploy a well-trained walking policy
+python deploy.py
 ```
