@@ -83,3 +83,30 @@ cd go1_deploy/go1_gym_deploy/scripts/
 # deploy a well-trained walking policy
 python deploy.py
 ```
+
+
+# External Perception
+This part only related to our own hardware setting (Xvaier AGX + D435 + T265), environment is Ros2 Foxy on Ubuntu 20.04
+
+Make sure the fan of AGX is running in high speed
+```
+sudo /usr/bin/jetson_clocks --fan
+```
+
+Runing Rosbridge for visualization in local network
+```bash
+# sudo apt install ros-foxy-image-transport-plugins
+# This important for a automatically compress image, otherwise full resolution image would lead to high delay
+conda deactivate
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+```
+
+Start D435 + T265 topic node
+```bash
+# Recognize serial number of different camera
+rs-enumerate-devices -s
+# launch D435
+ros2 launch realsense2_camera rs_launch.py serial_no:="'827312072741'"
+# launch T265
+ros2 launch realsense2_camera rs_launch.py serial_no:="'146322110342'"
+```
