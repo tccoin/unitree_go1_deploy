@@ -73,6 +73,8 @@ pip install -e .
 - `Ping 192.168.123.15` to validate connection
 - Press `L2 + A`, make robot get down
 - Press `L2 + B`, enter damping mode
+
+1. Deploy in AGX
 ```bash
 # Start communication with Go1
 cd unitree_legged_sdk/build
@@ -82,6 +84,18 @@ conda activate go1_deploy
 cd go1_deploy/go1_gym_deploy/scripts/
 # deploy a well-trained walking policy
 python deploy.py
+```
+
+2. Or deploy in go1 embedded jetson
+```bash
+# first go right branch
+rsync -av --exclude='build' ../unitree_go1_deploy unitree@192.168.123.15:~
+ssh unitree@192.168.123.15
+cd ~/unitree_go1_deploy/unitree_legged_sdk/build
+./lcm_position
+# new terminal
+cd ~/unitree_go1_deploy/go1_deploy/go1_gym_deploy/scripts/
+python3 deploy.py
 ```
 
 
