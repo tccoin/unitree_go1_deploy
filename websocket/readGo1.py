@@ -28,7 +28,7 @@ class MultiTopicBridge(Node):
             Odometry, '/relay/pose/odom', 1)
 
         # rosbridge websocket connect
-        self.ros_client = roslibpy.Ros(host='35.3.98.240', port=9090)
+        self.ros_client = roslibpy.Ros(host='35.3.201.75', port=9090)
         self.ros_client.run()
 
         # subscribe rgb image
