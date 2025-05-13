@@ -130,15 +130,22 @@ ros2 launch realsense2_camera rs_launch.py serial_no:="'146322110342'"
 # Websocket Relay
 For the communication with server to achieve high level policy inference
 
+- Subscrible go1 perception info
 ```bash
 # In Server
 sudo apt install ros-humble-compressed-image-transport
 cd websocket
 conda deactivate
-python3 readGo1.py
+python3 relay2server.py
 ```
 
+- Visualization in server rviz
 ```bash
 # In Server Visualization
 rviz2 -d websocket/visualize.rviz
+```
+
+- Send expected velocity to relay
+```
+python3 vel_bridge.py --ros-args -p keyboard:=true
 ```
