@@ -128,6 +128,8 @@ ros2 launch realsense2_camera rs_launch.py serial_no:="'146322110342'"
 
 
 # Websocket Relay
+
+### In Server
 For the communication with server to achieve high level policy inference
 
 - Subscrible go1 perception info
@@ -146,6 +148,25 @@ rviz2 -d websocket/visualize.rviz
 ```
 
 - Send expected velocity to relay
+```bash
+# if wifi is open 
+sudo ip route add    224.0.0.0/4 dev eno1    metric 100
+python3 server2relay.py
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 ```
-python3 vel_bridge.py --ros-args -p keyboard:=true
+
+### In Relay
+
+- Relay Camera information
+```bash
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+ros2 launch realsense2_camera rs_launch.py serial_no:="'827312072741'"
+ros2 launch realsense2_camera rs_launch.py serial_no:="'146322110342'"
+```
+
+- Receive velocity message from server and relay to Go1
+```bash
+conda deactivate
+cd websocket
+python3 relay2go1.py
 ```
