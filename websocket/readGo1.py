@@ -8,7 +8,8 @@ import base64
 import numpy as np
 import cv2
 import struct
-
+from tf2_ros import TransformBroadcaster
+from geometry_msgs.msg import TransformStamped
 
 class MultiTopicBridge(Node):
     def __init__(self):
@@ -26,6 +27,7 @@ class MultiTopicBridge(Node):
             Image, '/relay/depth', 1)
         self.pub_odom = self.create_publisher(
             Odometry, '/relay/pose/odom', 1)
+        self.tf_broadcaster = TransformBroadcaster(self)
 
         # rosbridge websocket connect
         self.ros_client = roslibpy.Ros(host='35.3.201.75', port=9090)
@@ -94,6 +96,16 @@ class MultiTopicBridge(Node):
         odom_msg.twist.twist.angular.y = twist['angular']['y']
         odom_msg.twist.twist.angular.z = twist['angular']['z']
         self.pub_odom.publish(odom_msg)
+
+        t = TransformStamped()
+        t.header.stamp = odom_msg.header.stamp
+        t.header.frame_id = odom_msg.header.frame_id
+        t.child_frame_id = odom_msg.child_frame_id or "camera_link"
+        t.transform.translation.x = odom_msg.pose.pose.position.x
+        t.transform.translation.y = odom_msg.pose.pose.position.y
+        t.transform.translation.z = odom_msg.pose.pose.position.z
+        t.transform.rotation = odom_msg.pose.pose.orientation
+        self.tf_broadcaster.sendTransform(t)
 
     # ---------- helpers ----------
     def _to_compressed_image(self, msg, frame_id='camera_frame'):
