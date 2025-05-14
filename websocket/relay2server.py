@@ -10,13 +10,19 @@ import cv2
 import struct
 from tf2_ros import TransformBroadcaster
 from geometry_msgs.msg import TransformStamped
+import copy
 
 class MultiTopicBridge(Node):
     def __init__(self):
         super().__init__('rosbridge_multi_topic_relay')
         self.color_frame_count = 0
         self.depth_frame_count = 0
+        self.IF_OPENCV_SHOW = False
         self.bridge = CvBridge()
+        if self.IF_OPENCV_SHOW:
+            cv2.namedWindow("Depth Stream", cv2.WINDOW_NORMAL)
+            self.depth_img = None
+            self.timer = self.create_timer(0.08, self.timer_callback)
 
         # publishers
         self.pub_color_compressed = self.create_publisher(
@@ -74,6 +80,30 @@ class MultiTopicBridge(Node):
             msg, 'camera_depth_frame')
         if raw_depth_msg:
             self.pub_depth_raw.publish(raw_depth_msg)
+
+        self.depth_img = copy.deepcopy(raw_depth_msg)
+
+
+    def timer_callback(self):
+        if self.IF_OPENCV_SHOW:
+            bridge = CvBridge()
+            try:
+                depth_image = bridge.imgmsg_to_cv2(self.depth_img, desired_encoding="passthrough")  # 16UC1
+            except Exception as e:
+                self.get_logger().error(f"CVBridge conversion error: {e}")
+                return
+
+            # Normalize for visualization
+            depth_image_vis = cv2.normalize(depth_image, None, 0, 255, cv2.NORM_MINMAX)
+            depth_image_vis = np.uint8(depth_image_vis)
+            depth_colormap = cv2.applyColorMap(depth_image_vis, cv2.COLORMAP_JET)
+
+            # Display
+            cv2.imshow("Depth Stream", depth_colormap)
+            cv2.waitKey(1)
+        else:
+            pass
+
 
     def cb_odom(self, msg):
         odom_msg = Odometry()
