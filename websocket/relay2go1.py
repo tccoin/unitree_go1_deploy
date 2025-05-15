@@ -1,115 +1,75 @@
 #!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-import roslibpy
 import lcm
 
-# ---------------------------------------------------------------------------
-from rc_command_lcmt_relay import rc_command_lcmt_relay       # <- LCM message type
-# ---------------------------------------------------------------------------
+from rc_command_lcmt_relay import rc_command_lcmt_relay 
 
-LCM_URL = "udpm://239.255.76.67:7667?ttl=255"
-# LCM_CHANNEL = "rc_command"
+LCM_URL     = "udpm://239.255.76.67:7667?ttl=255"
+LCM_CHANNEL = "rc_command_relay"
+SPEED_TTL   = 1.0
 
 class VelLCMBridge(Node):
     def __init__(self):
         super().__init__('vel_lcm_bridge')
 
-        # ----------------- LCM --------------------------------------------
+        # ---------------- LCM ----------------
         self.lc = lcm.LCM(LCM_URL)
 
-        self.vel_subscriber = self.create_subscription(Twist, '/cmd_vel', self.cb_vel, 10)
-        self.timer = self.create_timer(1.0, self.timer_callback)
+        self.last_cmd_time = self.get_clock().now()
+        self.cmd_lin_x = 0.0
+        self.cmd_lin_y = 0.0
+        self.cmd_yaw   = 0.0
 
-        self.get_logger().info(
-            'VelLCMBridge initialised - forwarding /cmd_vel → LCM [%s]' 
-        )
+        # ---------------- ROS ----------------
+        self.create_subscription(Twist, '/cmd_vel', self.cb_vel, 10)
 
-        self.x = 0
-        self.y = 0
-        self.yaw = 0
+        # 10 Hz publish to LCM
+        self.create_timer(0.1, self.timer_callback)
 
-    # ---------------------------------------------------------------------
-    # rosbridge callback
-    # ---------------------------------------------------------------------
-    def cb_vel(self, msg):
-        """
-        msg is a plain Python dict from roslibpy, shaped as:
-        {
-            'linear':  {'x': float, 'y': float, 'z': float},
-            'angular': {'x': float, 'y': float, 'z': float}
-        }
-        """
-        lcm_msg = rc_command_lcmt_relay()
+        self.get_logger().info('VelLCMBridge started – forwarding /cmd_vel → LCM')
 
-        # Fill mandatory fields
-        lcm_msg.mode = 0
-        lcm_msg.left_stick  = [0.0, 0.0]
-        lcm_msg.right_stick = [0.0, 0.0]
-        lcm_msg.knobs       = [0.0, 0.0]
+    def cb_vel(self, msg: Twist):
+        self.cmd_lin_x = float(msg.linear.x)
+        self.cmd_lin_y = float(msg.linear.y)
+        self.cmd_yaw   = float(msg.angular.y)
 
-        lcm_msg.left_upper_switch        = 0
-        lcm_msg.left_lower_left_switch   = 0
-        lcm_msg.left_lower_right_switch  = 0
-        lcm_msg.right_upper_switch       = 0
-        lcm_msg.right_lower_left_switch  = 0
-        lcm_msg.right_lower_right_switch = 0
-
-        # ---------------- velocity mapping -------------------------------
-        # left stick 1  → linear.x (forward)
-        # left stick 0  → linear.y (lateral)
-        # right stick 0 → angular.z (yaw)
-        lcm_msg.left_stick[1]  = float(msg.linear.x)
-        lcm_msg.left_stick[0]  = float(msg.linear.y)
-        lcm_msg.right_stick[0] = float(msg.angular.y)
-
-        self.x = msg.linear.x
-        self.y = msg.linear.y
-        self.yaw = msg.angular.y
-
-
-        # -----------------------------------------------------------------
-        print(lcm_msg.left_stick, lcm_msg.right_stick)
-        self.lc.publish("rc_command_relay", lcm_msg.encode())
-
-        # Debug print (optional; comment out if spammy)
-        self.get_logger().debug(
-            f"LCM tx – lin:({lcm_msg.left_stick[1]:.3f},{lcm_msg.left_stick[0]:.3f})  "
-            f"yaw:{lcm_msg.right_stick[0]:.3f}"
-        )
+        self.last_cmd_time = self.get_clock().now()
 
     def timer_callback(self):
+        elapsed = (self.get_clock().now() - self.last_cmd_time).nanoseconds * 1e-9
+        if elapsed > SPEED_TTL:
+            lin_x = lin_y = yaw = 0.0 
+        else:
+            lin_x, lin_y, yaw = self.cmd_lin_x, self.cmd_lin_y, self.cmd_yaw
+
+        print(f"lin_x: {lin_x:.2f}, lin_y: {lin_y:.2f}, yaw: {yaw:.2f}")
+
         lcm_msg = rc_command_lcmt_relay()
         lcm_msg.mode = 0
-        lcm_msg.left_stick  = [self.y, self.x]
-        lcm_msg.right_stick = [self.yaw, 0.0]
+        lcm_msg.left_stick  = [lin_y, lin_x]
+        lcm_msg.right_stick = [yaw, 0.0]
         lcm_msg.knobs       = [0.0, 0.0]
 
-        lcm_msg.left_upper_switch        = 0
-        lcm_msg.left_lower_left_switch   = 0
-        lcm_msg.left_lower_right_switch  = 0
-        lcm_msg.right_upper_switch       = 0
-        lcm_msg.right_lower_left_switch  = 0
+        lcm_msg.left_upper_switch = \
+        lcm_msg.left_lower_left_switch = \
+        lcm_msg.left_lower_right_switch = \
+        lcm_msg.right_upper_switch = \
+        lcm_msg.right_lower_left_switch = \
         lcm_msg.right_lower_right_switch = 0
-        self.lc.publish("rc_command_relay", lcm_msg.encode())
-    # ---------------------------------------------------------------------
-    # clean shutdown
-    # ---------------------------------------------------------------------
+
+        self.lc.publish(LCM_CHANNEL, lcm_msg.encode())
+
     def destroy_node(self):
-        self.topic_vel.unsubscribe()
-        self.ros_client.terminate()
         super().destroy_node()
 
-# ---------------------------------------------------------------------------
-# main
-# ---------------------------------------------------------------------------
+# ---------------- main ----------------
 def main(args=None):
     rclpy.init(args=args)
     node = VelLCMBridge()
     try:
-        rclpy.spin(node)          # Spin *this* rclpy node (keeps logger alive)
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     finally:
