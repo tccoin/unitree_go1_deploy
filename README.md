@@ -163,7 +163,7 @@ ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 ros2 launch realsense2_camera rs_launch.py serial_no:="'827312072741'"
 ros2 launch realsense2_camera rs_launch.py serial_no:="'146322110342'"
 # or 
-ros2 launch realsense2_camera rs_launch.py depth_module.profile:=848x480x30 rgb_camera.profile:=848x480x30 align_depth.enable:=true serial_no:="'827312072741'"
+ros2 launch realsense2_camera rs_launch.py depth_module.profile:=640x480x30 rgb_camera.profile:=640x480x30 align_depth.enable:=true serial_no:="'827312072741'"
 ros2 launch realsense2_camera rs_launch.py serial_no:="'146322110342'"
 ```
 

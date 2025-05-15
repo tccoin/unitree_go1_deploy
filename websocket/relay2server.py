@@ -62,7 +62,8 @@ class MultiTopicBridge(Node):
             self.ros_client,
             '/camera/pose/sample',
             'nav_msgs/Odometry',
-            queue_length=1)
+            queue_length=1,
+            throttle_rate=20)
         self.topic_odom.subscribe(self.cb_odom)
 
     # ---------- callbacks ----------
