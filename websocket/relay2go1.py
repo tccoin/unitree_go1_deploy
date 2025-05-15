@@ -2,11 +2,12 @@
 
 import rclpy
 from rclpy.node import Node
+from geometry_msgs.msg import Twist
 import roslibpy
 import lcm
 
 # ---------------------------------------------------------------------------
-from rc_command_lcmt import rc_command_lcmt        # <- LCM message type
+from rc_command_lcmt_relay import rc_command_lcmt_relay       # <- LCM message type
 # ---------------------------------------------------------------------------
 
 LCM_URL = "udpm://239.255.76.67:7667?ttl=255"
@@ -19,23 +20,8 @@ class VelLCMBridge(Node):
         # ----------------- LCM --------------------------------------------
         self.lc = lcm.LCM(LCM_URL)
 
-        # ----------------- rosbridge websocket ----------------------------
-        self.ros_client = roslibpy.Ros(host='141.212.194.240', port=9090)
-        try:
-            self.ros_client.run()
-        except Exception as e:
-            self.get_logger().error(f'Unable to connect to rosbridge: {e}')
-            raise
-
-        # ----------------- ROS topic subscription -------------------------
-        self.topic_vel = roslibpy.Topic(
-            self.ros_client,
-            '/cmd_vel',
-            'geometry_msgs/Twist',
-            queue_length=1,
-            throttle_rate=0
-        )
-        self.topic_vel.subscribe(self.cb_vel)
+        self.vel_subscriber = self.create_subscription(Twist, '/cmd_vel', self.cb_vel, 10)
+        self.timer = self.create_timer(1.0, self.timer_callback)
 
         self.get_logger().info(
             'VelLCMBridge initialised - forwarding /cmd_vel → LCM [%s]' 
@@ -52,7 +38,7 @@ class VelLCMBridge(Node):
             'angular': {'x': float, 'y': float, 'z': float}
         }
         """
-        lcm_msg = rc_command_lcmt()
+        lcm_msg = rc_command_lcmt_relay()
 
         # Fill mandatory fields
         lcm_msg.mode = 0
@@ -71,12 +57,12 @@ class VelLCMBridge(Node):
         # left stick 1  → linear.x (forward)
         # left stick 0  → linear.y (lateral)
         # right stick 0 → angular.z (yaw)
-        lcm_msg.left_stick[1]  = float(msg['linear']['x'])
-        lcm_msg.left_stick[0]  = float(msg['linear']['y'])
-        lcm_msg.right_stick[0] = float(msg['angular']['z'])
+        lcm_msg.left_stick[1]  = float(msg.linear.x)
+        lcm_msg.left_stick[0]  = float(msg.linear.y)
+        lcm_msg.right_stick[0] = float(msg.angular.y)
 
         # -----------------------------------------------------------------
-        print(lcm_msg.left_stick)
+        print(lcm_msg.left_stick, lcm_msg.right_stick)
         self.lc.publish("rc_command_relay", lcm_msg.encode())
 
         # Debug print (optional; comment out if spammy)
@@ -85,6 +71,20 @@ class VelLCMBridge(Node):
             f"yaw:{lcm_msg.right_stick[0]:.3f}"
         )
 
+    def timer_callback(self):
+        lcm_msg = rc_command_lcmt_relay()
+        lcm_msg.mode = 0
+        lcm_msg.left_stick  = [0.55, 0.0]
+        lcm_msg.right_stick = [0.0, 0.0]
+        lcm_msg.knobs       = [0.0, 0.0]
+
+        lcm_msg.left_upper_switch        = 0
+        lcm_msg.left_lower_left_switch   = 0
+        lcm_msg.left_lower_right_switch  = 0
+        lcm_msg.right_upper_switch       = 0
+        lcm_msg.right_lower_left_switch  = 0
+        lcm_msg.right_lower_right_switch = 0
+        self.lc.publish("rc_command_relay", lcm_msg.encode())
     # ---------------------------------------------------------------------
     # clean shutdown
     # ---------------------------------------------------------------------

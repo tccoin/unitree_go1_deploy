@@ -7,6 +7,7 @@ import numpy as np
 
 from go1_gym_deploy.lcm_types.leg_control_data_lcmt import leg_control_data_lcmt
 from go1_gym_deploy.lcm_types.rc_command_lcmt import rc_command_lcmt
+from go1_gym_deploy.lcm_types.rc_command_lcmt_relay import rc_command_lcmt_relay
 from go1_gym_deploy.lcm_types.state_estimator_lcmt import state_estimator_lcmt
 from go1_gym_deploy.lcm_types.camera_message_lcmt import camera_message_lcmt
 from go1_gym_deploy.lcm_types.camera_message_rect_wide import camera_message_rect_wide
@@ -315,10 +316,12 @@ class StateEstimator:
         self.right_lower_left_switch = msg.right_lower_left_switch
         self.right_lower_right_switch = msg.right_lower_right_switch
 
+        # print("command from rc: ", self.right_stick, self.left_stick)
+
 
     def _rc_command_relay_cb(self, channel, data):
 
-        msg = rc_command_lcmt.decode(data)
+        msg = rc_command_lcmt_relay.decode(data)
 
         self.left_upper_switch_pressed = ((msg.left_upper_switch and not self.left_upper_switch) or self.left_upper_switch_pressed)
         self.left_lower_left_switch_pressed = ((msg.left_lower_left_switch and not self.left_lower_left_switch) or self.left_lower_left_switch_pressed)
@@ -337,7 +340,7 @@ class StateEstimator:
         # self.right_lower_left_switch = msg.right_lower_left_switch
         # self.right_lower_right_switch = msg.right_lower_right_switch
 
-        print("command from server: ", self.right_stick, self.left_stick)
+        print("command from relay: ", self.right_stick, self.left_stick)
 
 
     def _camera_cb(self, channel, data):

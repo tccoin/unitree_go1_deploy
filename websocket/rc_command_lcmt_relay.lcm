@@ -1,4 +1,4 @@
-struct rc_command_lcmt
+struct rc_command_lcmt_relay
 {
     int16_t mode;
     float left_stick[2];
