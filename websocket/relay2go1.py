@@ -27,6 +27,10 @@ class VelLCMBridge(Node):
             'VelLCMBridge initialised - forwarding /cmd_vel → LCM [%s]' 
         )
 
+        self.x = 0
+        self.y = 0
+        self.yaw = 0
+
     # ---------------------------------------------------------------------
     # rosbridge callback
     # ---------------------------------------------------------------------
@@ -61,6 +65,11 @@ class VelLCMBridge(Node):
         lcm_msg.left_stick[0]  = float(msg.linear.y)
         lcm_msg.right_stick[0] = float(msg.angular.y)
 
+        self.x = msg.linear.x
+        self.y = msg.linear.y
+        self.yaw = msg.angular.y
+
+
         # -----------------------------------------------------------------
         print(lcm_msg.left_stick, lcm_msg.right_stick)
         self.lc.publish("rc_command_relay", lcm_msg.encode())
@@ -74,8 +83,8 @@ class VelLCMBridge(Node):
     def timer_callback(self):
         lcm_msg = rc_command_lcmt_relay()
         lcm_msg.mode = 0
-        lcm_msg.left_stick  = [0.55, 0.0]
-        lcm_msg.right_stick = [0.0, 0.0]
+        lcm_msg.left_stick  = [self.y, self.x]
+        lcm_msg.right_stick = [self.yaw, 0.0]
         lcm_msg.knobs       = [0.0, 0.0]
 
         lcm_msg.left_upper_switch        = 0

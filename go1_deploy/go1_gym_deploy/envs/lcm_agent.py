@@ -150,6 +150,7 @@ class LCMAgent():
 
         cmds, reset_timer = self.command_profile.get_command(self.timestep * self.dt, probe=self.is_currently_probing)
         self.commands[:, :] = [cmds[:self.num_commands]]
+        print("robot command:", self.commands)
         self.filtered_commands[:, :] = 0.8 * self.filtered_commands[:, :] + 0.2 * self.commands[:, :]
         if reset_timer:
             self.reset_gait_indices()

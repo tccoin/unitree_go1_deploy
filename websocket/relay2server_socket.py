@@ -119,7 +119,7 @@ class SensorServerNode(Node):
         self.rgb_subscriber = self.create_subscription(
             CompressedImage, '/camera/color/image_raw/compressed', self.data_manager.rgb_callback, 10)
         self.depth_subscriber = self.create_subscription(
-            CompressedImage, '/camera/depth/image_rect_raw/compressedDepth', self.data_manager.depth_callback, 10)
+            CompressedImage, '/camera/aligned_depth_to_color/image_raw/compressedDepth', self.data_manager.depth_callback, 10)
         self.pose_subscriber = self.create_subscription(
             Odometry,
             '/camera/pose/sample',

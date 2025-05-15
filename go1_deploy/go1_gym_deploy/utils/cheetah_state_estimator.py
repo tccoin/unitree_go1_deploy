@@ -161,7 +161,7 @@ class StateEstimator:
 
         # always in use
         cmd_x = 0.5 * self.left_stick[1]
-        cmd_yaw = -1 * self.right_stick[0]
+        cmd_yaw = 2 * self.right_stick[0]
 
         # default values
         cmd_y = -1 * self.left_stick[0]  # -1 * self.left_stick[0]
