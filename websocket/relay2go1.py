@@ -8,7 +8,7 @@ from rc_command_lcmt_relay import rc_command_lcmt_relay
 
 LCM_URL     = "udpm://239.255.76.67:7667?ttl=255"
 LCM_CHANNEL = "rc_command_relay"
-SPEED_TTL   = 1.0
+SPEED_TTL   = 1.5
 
 class VelLCMBridge(Node):
     def __init__(self):
@@ -31,9 +31,9 @@ class VelLCMBridge(Node):
         self.get_logger().info('VelLCMBridge started – forwarding /cmd_vel → LCM')
 
     def cb_vel(self, msg: Twist):
-        self.cmd_lin_x = float(msg.linear.x)
+        self.cmd_lin_x = float(msg.linear.x) * 1.1
         self.cmd_lin_y = float(msg.linear.y)
-        self.cmd_yaw   = float(msg.angular.y)
+        self.cmd_yaw   = float(msg.angular.y) * 0.7
 
         self.last_cmd_time = self.get_clock().now()
 
