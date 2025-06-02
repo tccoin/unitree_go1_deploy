@@ -295,7 +295,7 @@ class StateEstimator:
         pass
 
     def _rc_command_cb(self, channel, data):
-
+        # control signal from remote controller
         msg = rc_command_lcmt.decode(data)
 
 
@@ -307,8 +307,8 @@ class StateEstimator:
         self.right_lower_right_switch_pressed = ((msg.right_lower_right_switch and not self.right_lower_right_switch) or self.right_lower_right_switch_pressed)
 
         self.mode = msg.mode
-        # self.right_stick = msg.right_stick
-        # self.left_stick = msg.left_stick
+        self.right_stick = msg.right_stick
+        self.left_stick = msg.left_stick
         self.left_upper_switch = msg.left_upper_switch
         self.left_lower_left_switch = msg.left_lower_left_switch
         self.left_lower_right_switch = msg.left_lower_right_switch
@@ -320,6 +320,7 @@ class StateEstimator:
 
 
     def _rc_command_relay_cb(self, channel, data):
+        # control signal from server
 
         msg = rc_command_lcmt_relay.decode(data)
 
