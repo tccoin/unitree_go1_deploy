@@ -1,9 +1,9 @@
 # Go1 Training and Deployment in Real-World
 
 <!-- ![go1](go1.jpg)  -->
-<div style="text-align: center;">
-  <img src="go1.jpg" alt="go1" style="width:400px;">
-</div>
+<center>
+  <img src="go1.jpg" alt="go1" width="400">
+</center>
 
 <br>
 
