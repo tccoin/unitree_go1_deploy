@@ -85,6 +85,8 @@ class StateEstimator:
         self.ctrlmode_right = 0
         self.left_stick = [0, 0]
         self.right_stick = [0, 0]
+        self.relay_left_stick = [0, 0]
+        self.relay_right_stick = [0, 0]
         self.left_upper_switch = 0
         self.left_lower_left_switch = 0
         self.left_lower_right_switch = 0
@@ -295,7 +297,7 @@ class StateEstimator:
         pass
 
     def _rc_command_cb(self, channel, data):
-        # control signal from remote controller
+
         msg = rc_command_lcmt.decode(data)
 
 
@@ -307,7 +309,16 @@ class StateEstimator:
         self.right_lower_right_switch_pressed = ((msg.right_lower_right_switch and not self.right_lower_right_switch) or self.right_lower_right_switch_pressed)
 
         self.mode = msg.mode
-        # self.right_stick = msg.right_stick
+        relay_val = abs(self.relay_left_stick[0]) + abs(self.relay_left_stick[1]) + abs(self.relay_right_stick[0]) + abs(self.relay_right_stick[1])
+        rc_val = abs(msg.right_stick[0]) + abs(msg.right_stick[1]) + abs(msg.left_stick[0]) + abs(msg.left_stick[1])
+        print(f"relay_val: {relay_val}, rc_val: {rc_val}")
+        if relay_val<0.01:
+            if rc_val>0.01:
+                self.right_stick = msg.right_stick
+                self.left_stick = msg.left_stick
+            else:
+                self.right_stick = [0, 0]
+                self.left_stick = [0, 0]
         # self.left_stick = msg.left_stick
         self.left_upper_switch = msg.left_upper_switch
         self.left_lower_left_switch = msg.left_lower_left_switch
@@ -316,13 +327,13 @@ class StateEstimator:
         self.right_lower_left_switch = msg.right_lower_left_switch
         self.right_lower_right_switch = msg.right_lower_right_switch
 
-        # print("command from rc: ", self.right_stick, self.left_stick)
-
+        # print("command from rc: ", msg.right_stick, msg.left_stick)
+        # print(f"current val: mode={self.mode}, right={self.right_stick}, left={self.left_stick}")
 
     def _rc_command_relay_cb(self, channel, data):
-        # control signal from server
 
         msg = rc_command_lcmt_relay.decode(data)
+
 
         self.left_upper_switch_pressed = ((msg.left_upper_switch and not self.left_upper_switch) or self.left_upper_switch_pressed)
         self.left_lower_left_switch_pressed = ((msg.left_lower_left_switch and not self.left_lower_left_switch) or self.left_lower_left_switch_pressed)
@@ -332,6 +343,8 @@ class StateEstimator:
         self.right_lower_right_switch_pressed = ((msg.right_lower_right_switch and not self.right_lower_right_switch) or self.right_lower_right_switch_pressed)
 
         self.mode = msg.mode
+        self.relay_left_stick = msg.left_stick
+        self.relay_right_stick = msg.right_stick
         self.right_stick = msg.right_stick
         self.left_stick = msg.left_stick
         # self.left_upper_switch = msg.left_upper_switch
