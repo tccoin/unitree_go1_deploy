@@ -1,3 +1,67 @@
+# Go1 Training and Deployment in Real-World
+
+<!-- ![go1](go1.jpg)  -->
+<div align=center>
+  <img src="go1.jpg" alt="go1" style="width:400px;">
+</div>
+
+<br>
+
+The structure overview of this repo is shown below. We open source all training code and deployment code and external perception communication code. Besides, we also supply our trained weights in `go1_deploy`, in case you only want deploy.
+
+```bash
+unitree_go1_deploy
+├── go1_deploy # Deployment pipeline
+├── unitree_legged_sdk # Deployment sdk
+├── legged_gym # Training environment
+├── rsl_rl # Training alg
+└── websocket # External perception
+└── mechanics # 3d printing
+```
+
+# Go1 Locomotion training
+
+
+
+1. Create environment and install torch
+
+   ```bash
+   conda create -n dhal python=3.8 
+   pip3 install torch torchvision torchaudio 
+   ```
+   
+
+2. Install Isaac Gym preview 4 release https://developer.nvidia.com/isaac-gym
+
+   unzip files to a folder, then install with pip:
+
+   `cd isaacgym/python && pip install -e .`
+
+
+3. Clone our repo and install
+    
+    ```bash
+    cd legged_gym
+    pip install -e .
+    cd ../rsl_rl
+    pip install -e .
+    ```
+### Training
+
+- go to `legged_gym/legged_gym/scripts`
+
+    ```
+    python train.py --exptid=go1-loco
+    ```
+
+### Play
+
+- go to `legged_gym/legged_gym/scripts`
+  
+    ```
+    python play.py --exptid=go1-loco
+    ```
+
 # Unitree Go1 Deployment in Jetson
 
 ## Installation
