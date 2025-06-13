@@ -34,6 +34,9 @@ cd ~/unitree_go1_deploy/unitree_legged_sdk/build
 
 cd ~/unitree_go1_deploy/unitree_legged_sdk/build && ./lcm_position
 conda deactivate && cd ~/unitree_go1_deploy/go1_deploy/go1_gym_deploy/scripts/ && python3 deploy.py
+source /opt/ros/humble/setup.zsh && source ros2_ws/install/setup.zsh
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+
 
 # if the joint has weird sound, restart this program
 
@@ -48,3 +51,24 @@ sudo systemctl restart networking
 # install wifi driver
 https://github.com/lwfinger/rtl8852au
 fix fallthrough compile error: https://github.com/lwfinger/rtl8852au/pull/83/commits/7ccdbffda216b3be4cb8d3df0c0c9cf5c1d29663
+
+
+
+
+# Set GO1 wlan
+```
+# temp
+sudo ip route del default via 192.168.123.161 dev eth0
+sudo ip route del default via 255.255.255.0 dev eth0
+sudo ip route replace default via 35.3.0.1 dev wlan0 metric 100
+
+# persistent
+# edit /etc/network/interfaces
+#auto eth0
+#iface eth0 inet dhcp
+#    metric 30000
+sudo ifdown eth0 && sudo ifup eth0
+sudo nmcli connection modify "MWireless" ipv4.route-metric 90 ipv4.never-default no
+sudo nmcli connection up "MWireless"
+
+```

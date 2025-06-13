@@ -176,35 +176,34 @@ python3 relay2go1.py
 
 ### Final Command
 
-Perception
+Perception (on nuc)
 ```bash
 # 1
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 # 2
-python3 websocket/relay2server_socket.py
+python3 unitree_go1_deploy/websocket/relay2server_socket.py
 # 3
-ros2 launch realsense2_camera rs_launch.py depth_module.profile:=640x480x30 rgb_camera.profile:=640x480x30 align_depth.enable:=true serial_no:="'827312072741'"
+ros2 launch realsense2_camera rs_launch.py depth_module.profile:=640x480x30 rgb_camera.profile:=640x480x30 align_depth.enable:=true serial_no:="'827312072741'" json_file_path:="/home/curlynuc/ros2_ws/src/realsense-ros/realsense2_camera/launch/HighAccuracyPreset.json"
 #4
 ros2 launch realsense2_camera rs_launch.py serial_no:="'146322110342'"
-
+#5
+python3 unitree_go1_deploy/websocket/relay2go1.py
 ```
 
 
 Control
 ```bash
-# 1.
-sudo ip route add    224.0.0.0/4 dev eno1    metric 100
-python3 websocket/relay2go1.py
+# 1.(on nuc)
+sudo ip route add 224.0.0.0/4 dev eno1    metric 100
+python3 unitree_go1_deploy/websocket/relay2go1.py
 
-# 2. 
-ssh unitree@192.168.123.15
+# 2. (on go1)
+# ssh unitree@192.168.123.15
 cd ~/unitree_go1_deploy/unitree_legged_sdk/build
 ./lcm_position
 
 # 3.
-ssh unitree@192.168.123.15
-cd ~/unitree_go1_deploy/go1_deploy/go1_gym_deploy/scripts/
-python3 deploy.py
+conda deactivate && python3 ~/unitree_go1_deploy/go1_deploy/go1_gym_deploy/scripts/deploy.py
 
 
 
