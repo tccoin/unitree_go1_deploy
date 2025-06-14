@@ -7,23 +7,7 @@
 
 sudo ip route add 224.0.0.0/4 dev eno1 metric 80
 
-# 1. rosbridge WebSocket server
-tmux has-session -t rosbridge 2>/dev/null
-if [ $? -ne 0 ]; then
-  echo "Starting rosbridge WebSocket server"
-  tmux new-session -d -s rosbridge \
-    ros2 launch rosbridge_server rosbridge_websocket_launch.xml
-fi
-
-# 2. relay2server_socket.py
-tmux has-session -t relay2server 2>/dev/null
-if [ $? -ne 0 ]; then
-  echo "Starting relay2server_socket.py"
-  tmux new-session -d -s relay2server \
-    python3 unitree_go1_deploy/websocket/relay2server_socket.py
-fi
-
-# 3. realsense (High‐accuracy preset)
+# realsense (High‐accuracy preset)
 tmux has-session -t realsense_high 2>/dev/null
 if [ $? -ne 0 ]; then
   echo "Starting realsense (High‐accuracy preset)"
@@ -36,7 +20,7 @@ if [ $? -ne 0 ]; then
       json_file_path:="/home/curlynuc/ros2_ws/src/realsense-ros/realsense2_camera/launch/HighAccuracyPreset.json"
 fi
 
-# 4. realsense (default/default‐profile) with second serial
+# realsense (default/default‐profile) with second serial
 tmux has-session -t realsense_default 2>/dev/null
 if [ $? -ne 0 ]; then
   echo "Starting realsense (default/default‐profile)"
@@ -45,14 +29,14 @@ if [ $? -ne 0 ]; then
       serial_no:="'146322110342'"
 fi
 
-# 5. relay2go1.py
-tmux has-session -t relay2go1 2>/dev/null
+# websocket server
+tmux has-session -t ws_server 2>/dev/null
 if [ $? -ne 0 ]; then
-  echo "Starting relay2go1.py"
-  tmux new-session -d -s relay2go1 \
-    zsh -c "python3 unitree_go1_deploy/websocket/relay2go1.py"
+  echo "Starting WebSocket server"
+  tmux new-session -d -s ws_server \
+    python3 $HOME/unitree_go1_deploy/server/unified_robot_server.py
 fi
 
-echo "Five tmux sessions are now running (or have been restarted)."
+echo "Tmux sessions are now running (or have been restarted)."
 tmux ls
 echo "Use 'tmux ls' to list them and 'tmux attach -t <session_name>' to attach. Use 'tmux kill-server' to kill all sessions."

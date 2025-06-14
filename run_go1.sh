@@ -5,6 +5,8 @@
 # This script creates (or restarts) two detached tmux sessions,
 # each running one of the specified commands.
 
+sudo ip route add 224.0.0.0/4 dev eth0 metric 80
+
 # 1. Session “lcm_position” running the lcm_position binary
 tmux has-session -t lcm_position 2>/dev/null
 if [ $? -ne 0 ]; then
